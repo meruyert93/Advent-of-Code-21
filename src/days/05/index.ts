@@ -2,19 +2,21 @@ function getIntArray(size: number): number[] {
   return Array.apply(null, Array(size)).map((_, i) => i);
 }
 
-type Instruction = {
-  row: string[],
-  seat: string[],
-};
+type Instruction = { row: string[]; seat: string[] };
 
 function getInstruction(str: string): Instruction {
   return {
-    row: str.substr(0, str.length - 3).split(''),
-    seat: str.substr(str.length - 3).split(''),
-  }
+    row: str.substr(0, str.length - 3).split(""),
+    seat: str.substr(str.length - 3).split(""),
+  };
 }
 
-function resolveInstruction(instruction: string[], upper: number, charLower: string, charUpper: string): number {
+function resolveInstruction(
+  instruction: string[],
+  upper: number,
+  charLower: string,
+  charUpper: string
+): number {
   let items = getIntArray(upper);
 
   instruction.forEach((char) => {
@@ -31,11 +33,11 @@ function resolveInstruction(instruction: string[], upper: number, charLower: str
 }
 
 function getRow(instruction: Instruction, limit: number): number {
-  return resolveInstruction(instruction.row, limit, 'F', 'B');
+  return resolveInstruction(instruction.row, limit, "F", "B");
 }
 
 function getSeat(instruction: Instruction, limit: number): number {
-  return resolveInstruction(instruction.seat, limit, 'L', 'R');
+  return resolveInstruction(instruction.seat, limit, "L", "R");
 }
 
 export function one(input: string[]): number {
@@ -46,7 +48,9 @@ export function one(input: string[]): number {
     const row = getRow(instruction, 128);
     const seat = getSeat(instruction, 8);
     const id = row * 8 + seat;
-    if (id > highestId) { highestId = id }
+    if (id > highestId) {
+      highestId = id;
+    }
   });
 
   return highestId;
@@ -56,9 +60,7 @@ export function two(input: string[]): number {
   const taken = new Map();
 
   const isMine = (id: number): boolean => {
-    return !taken.has(id)
-      && taken.has(id + 1)
-      && taken.has(id - 1);
+    return !taken.has(id) && taken.has(id + 1) && taken.has(id - 1);
   };
 
   input.forEach((line) => {
@@ -70,16 +72,22 @@ export function two(input: string[]): number {
   });
 
   let mySeat = 0;
-  
+
   const seats = getIntArray(128 * 8 + 8);
   const middleSeat = seats.length / 2;
   if (isMine(middleSeat)) return middleSeat;
 
   for (let i = 0; i < seats.length / 2; i += 1) {
     const seatA = seats[middleSeat + i];
-    if (isMine(seatA)) { mySeat = seatA; break; }
+    if (isMine(seatA)) {
+      mySeat = seatA;
+      break;
+    }
     const seatB = seats[middleSeat - i];
-    if (isMine(seatA)) { mySeat = seatB; break; }
+    if (isMine(seatA)) {
+      mySeat = seatB;
+      break;
+    }
   }
 
   return mySeat;

@@ -1,5 +1,5 @@
-import fs from 'fs';
-import readline from 'readline';
+import fs from "fs";
+import readline from "readline";
 
 export function asArray(path: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
@@ -12,8 +12,14 @@ export function asArray(path: string): Promise<string[]> {
 
     const lines: string[] = [];
 
-    rl.on('line', (l) => { lines.push(l); });
-    rl.on('close', () => { resolve(lines); });
-    rl.on('error', (err) => { reject(err); });
+    rl.on("line", (l) => {
+      lines.push(l);
+    });
+    rl.on("close", () => {
+      resolve(lines);
+    });
+    rl.on("error", (err) => {
+      reject(err);
+    });
   });
 }
