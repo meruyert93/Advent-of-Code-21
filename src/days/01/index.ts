@@ -1,5 +1,7 @@
 const TARGET = 2020;
 
+// all gas, too many breaks
+
 export function one(_input: string[]): number {
   const input = _input.map((x) => Number.parseInt(x, 10));
   input.sort((a, b) => a - b);
@@ -15,15 +17,11 @@ export function one(_input: string[]): number {
 
       if (firstVal + secondVal === TARGET) {
         x = firstVal * secondVal;
-        break;
+        return x;
         // optimization: iterate backwards for more likely early matches
       } else if (secondVal < offset) {
         break;
       }
-    }
-
-    if (x) {
-      break;
     }
   }
 
@@ -54,19 +52,11 @@ export function two(_input: string[]): number {
 
         if (sum === TARGET) {
           x = firstVal * secondVal * thirdVal;
-          break;
+          return x;
           // optimization: break early when branch will never match
         } else if (sum > TARGET) {
           break;
         }
-
-        if (x) {
-          break;
-        }
-      }
-
-      if (x) {
-        break;
       }
     }
   }
