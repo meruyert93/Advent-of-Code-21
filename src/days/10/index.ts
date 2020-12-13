@@ -1,4 +1,4 @@
-import { nextTick } from "process";
+import { toInt } from "../../lib/helpers";
 
 type State = {
   ones: number,
@@ -6,7 +6,7 @@ type State = {
 };
 
 function prepareInput(input: string[]): number[] {
-  const numbers = input.map(x => Number.parseInt(x, 10));
+  const numbers = input.map(toInt);
   numbers.unshift(0);
   numbers.sort((a, b) => a - b);
   const highestAdapter = numbers[numbers.length - 1];

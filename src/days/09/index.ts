@@ -1,3 +1,5 @@
+import { toInt } from "../../lib/helpers";
+
 const WINDOW_SIZE = 25;
 
 function getSums(window: number[]): Set<number> {
@@ -15,7 +17,7 @@ function getSums(window: number[]): Set<number> {
 }
 
 export function one(input: string[]) {
-  const numbers = input.map((x) => Number.parseInt(x, 10));
+  const numbers = input.map(toInt);
 
   let target = 0;
 
@@ -57,7 +59,7 @@ function detectRange(
 }
 
 export function two(input: string[]): number | null {
-  const numbers = input.map((x) => Number.parseInt(x, 10));
+  const numbers = input.map(toInt);
   const target = one(input);
 
   let result = null;

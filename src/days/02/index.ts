@@ -1,3 +1,5 @@
+import { toInt } from "../../lib/helpers";
+
 type Constraint = {
   x: number;
   y: number;
@@ -12,8 +14,8 @@ function parseLine(line: string): { password: string; constraint: Constraint } {
 
   return {
     constraint: {
-      x: Number.parseInt(match[1], 10),
-      y: Number.parseInt(match[2], 10),
+      x: toInt(match[1]),
+      y: toInt(match[2]),
       letter: match[3],
     },
     password: match[4],

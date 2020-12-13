@@ -1,3 +1,5 @@
+import { toInt } from "../../lib/helpers";
+
 type Passport = Record<string, string>;
 type Validator = (val: string) => boolean;
 
@@ -9,11 +11,7 @@ function readPassports(input: string[]): Passport[] {
   };
 
   const { passports } = input.reduce(
-    (
-      acc: PassportAcc,
-      line: string,
-      idx: number
-    ): PassportAcc => {
+    (acc: PassportAcc, line: string, idx: number): PassportAcc => {
       if (line === "") {
         return {
           currentPassport: {},
@@ -48,7 +46,7 @@ const rules = {
   },
   between(min: number, max: number): Validator {
     return (val) => {
-      const num = Number.parseInt(val, 10);
+      const num = toInt(val);
       return Number.isInteger(num) && num >= min && num <= max;
     };
   },
@@ -87,7 +85,7 @@ const rules = {
       const letters = val.split("");
       return (
         letters.length === len &&
-        letters.every((x) => Number.isInteger(Number.parseInt(x, 10)))
+        letters.every((x) => Number.isInteger(toInt(x)))
       );
     };
   },

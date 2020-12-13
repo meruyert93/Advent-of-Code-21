@@ -1,3 +1,5 @@
+import { toInt } from "../../lib/helpers";
+
 type Bag = {
   type: string;
   children: BagContraint[];
@@ -18,7 +20,7 @@ function parseChildren(str: string): BagContraint[] {
   while ((res = re.exec(str)) != null) {
     children.push({
       type: res[2],
-      amount: Number.parseInt(res[1], 10),
+      amount: toInt(res[1]),
     });
   }
 

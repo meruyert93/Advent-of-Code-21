@@ -1,3 +1,5 @@
+import { toInt } from "../../lib/helpers";
+
 /** First we detecc, then we correcc */
 type State = {
   index: number;
@@ -22,7 +24,7 @@ function parseLine(line: string, index: number): Instruction {
   const [operation, argument] = line.split(" ");
   return {
     operation,
-    argument: Number.parseInt(argument, 10),
+    argument: toInt(argument),
     index,
   };
 }

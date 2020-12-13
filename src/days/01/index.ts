@@ -1,9 +1,10 @@
-const TARGET = 2020;
+import { toInt } from "../../lib/helpers";
 
+const TARGET = 2020;
 // all gas, too many breaks
 
 export function one(_input: string[]): number {
-  const input = _input.map((x) => Number.parseInt(x, 10));
+  const input = _input.map(toInt);
   input.sort((a, b) => a - b);
 
   let x = 0;
@@ -29,7 +30,7 @@ export function one(_input: string[]): number {
 }
 
 export function two(_input: string[]): number {
-  const input = _input.map((x) => Number.parseInt(x, 10));
+  const input = _input.map(toInt);
   input.sort((a, b) => a - b);
 
   let x = 0;

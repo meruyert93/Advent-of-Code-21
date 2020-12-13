@@ -31,9 +31,9 @@ const selectors: Record<
   string,
   (layout: Layout, x: number, y: number) => Position | null
 > = {
+  top: (layout, x, y) => select(layout, x, y - 1),
   left: (layout, x, y) => select(layout, x - 1, y),
   right: (layout, x, y) => select(layout, x + 1, y),
-  top: (layout, x, y) => select(layout, x, y - 1),
   bottom: (layout, x, y) => select(layout, x, y + 1),
   topLeft: (layout, x, y) => select(layout, x - 1, y - 1),
   topRight: (layout, x, y) => select(layout, x + 1, y - 1),

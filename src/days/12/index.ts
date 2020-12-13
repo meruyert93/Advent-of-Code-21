@@ -1,9 +1,11 @@
+import { toInt } from "../../lib/helpers";
+
 type Direction = "N" | "E" | "S" | "W";
-type Signal = "L" | "R" | "F";
+type Turn = "L" | "R";
 type Angle = 0 | 90 | 180 | 270;
 
 type Action = {
-  type: Direction | Signal;
+  type: Direction | Turn | "F";
   argument: number;
 };
 
@@ -13,6 +15,12 @@ type State = {
   angle: Angle;
 };
 
+type WaypointState = {
+  x: number;
+  y: number;
+  waypoint: { x: number; y: number };
+};
+
 const ANGLES: Record<number, Direction> = {
   0: "N",
   90: "E",
@@ -20,11 +28,21 @@ const ANGLES: Record<number, Direction> = {
   270: "W",
 };
 
-const isValidAngle = (x: number): x is Angle => {
-  return [0, 90, 180, 270].includes(x);
-};
+function getX(x: number, action: Action): number {
+  const factor = action.type === "E" ? 1 : -1;
+  return x + action.argument * factor;
+}
 
-const getAngle = (start: number, argument: number): Angle => {
+function getY(y: number, action: Action): number {
+  const factor = action.type === "S" ? 1 : -1;
+  return y + action.argument * factor;
+}
+
+function isValidAngle(x: number): x is Angle {
+  return [0, 90, 180, 270].includes(x);
+}
+
+function getAngle(start: number, argument: number): Angle {
   const offset = (start + argument) % 360;
   const result = offset < 0 ? offset + 360 : offset;
 
@@ -32,17 +50,28 @@ const getAngle = (start: number, argument: number): Angle => {
     throw new TypeError(`invalid angle ${result}`);
   }
   return result;
-};
+}
 
-const getX = (x: number, action: Action) => {
-  const factor = action.type === "E" ? 1 : -1;
-  return x + action.argument * factor;
-};
+function rotate(point: number[], angle: Angle, turn: Turn): number[] {
+  const [x, y] = point;
 
-const getY = (y: number, action: Action) => {
-  const factor = action.type === "S" ? 1 : -1;
-  return y + action.argument * factor;
-};
+  if (angle === 180) {
+    return [-x, -y];
+  } else if (
+    (angle === 90 && turn === "R") ||
+    (angle === 270 && turn === "L")
+  ) {
+    return [-y, x];
+  }
+
+  return [y, -x];
+}
+
+function parseAction(line: string): Action {
+  const type = line[0] as Direction | Turn | "F";
+  const argument = toInt(line.substring(1));
+  return { type, argument };
+}
 
 function applyAction(state: State, action: Action): State {
   switch (action.type) {
@@ -72,45 +101,6 @@ function applyAction(state: State, action: Action): State {
       return { ...state, angle: nextAngle };
     }
   }
-}
-
-function parseAction(line: string): Action {
-  const type = line[0] as Direction | Signal;
-  const argument = Number.parseInt(line.substring(1), 10);
-  return { type, argument };
-}
-
-export function one(input: string[]) {
-  const initialState: State = {
-    x: 0,
-    y: 0,
-    angle: 90,
-  };
-
-  const lastState = input.map(parseAction).reduce(applyAction, initialState);
-
-  return Math.abs(lastState.x) + Math.abs(lastState.y);
-}
-
-type WaypointState = {
-  x: number;
-  y: number;
-  waypoint: { x: number; y: number };
-};
-
-function rotate(point: number[], angle: Angle, turn: Signal): number[] {
-  const [x, y] = point;
-
-  if (angle === 180) {
-    return [-x, -y];
-  } else if (
-    (angle === 90 && turn === "R") ||
-    (angle === 270 && turn === "L")
-  ) {
-    return [-y, x];
-  }
-
-  return [y, -x];
 }
 
 function applyWaypointAction(
@@ -157,6 +147,18 @@ function applyWaypointAction(
       };
     }
   }
+}
+
+export function one(input: string[]) {
+  const initialState: State = {
+    x: 0,
+    y: 0,
+    angle: 90,
+  };
+
+  const lastState = input.map(parseAction).reduce(applyAction, initialState);
+
+  return Math.abs(lastState.x) + Math.abs(lastState.y);
 }
 
 export function two(input: string[]): number {
