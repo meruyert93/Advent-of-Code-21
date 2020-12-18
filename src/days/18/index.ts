@@ -110,21 +110,13 @@ function parseParens(tokens: TokenCollection): TokenCollection {
   return parseParens(tokens);
 }
 
-function parseOps(tokens: TokenCollection): TokenCollection {
-  console.log(tokens);
-  return tokens;
-}
-
-const basicLexer = (input: string): TokenCollection => parseParens(tokenizer(input));
+const lexer = (input: string): TokenCollection => parseParens(tokenizer(input));
 
 function basic(tokens: TokenCollection): number {
   const state: {
     op: Op | null;
     sum: number;
-  } = {
-    op: null,
-    sum: 0,
-  };
+  } = { op: null, sum: 0 };
 
   for (let i = 0; i < tokens.length; i += 1) {
     const token = tokens[i];
@@ -148,16 +140,30 @@ function basic(tokens: TokenCollection): number {
   return state.sum;
 }
 
-const advancedLexer = (input: string): TokenCollection => parseOps(parseParens(tokenizer(input)));
-
 function advanced(tokens: TokenCollection): number {
-  return 0;
+  const additions = tokens.filter((t) => isOp(t) && t.value === "+");
+
+  const nested = tokens.filter(isTokenCollection);
+
+  nested.forEach((t) => {
+    const result = advanced(t);
+    tokens.splice(tokens.indexOf(t), 1, { type: "num", value: result });
+  });
+
+  additions.forEach((t) => {
+    const tIndex = tokens.indexOf(t);
+    const l = tokens[tIndex - 1];
+    const r = tokens[tIndex + 1];
+    if (!isNum(r) || !isNum(l)) throw new TypeError("bad input");
+    tokens.splice(tIndex - 1, 3, { type: "num", value: l.value + r.value });
+  });
+
+  return basic(tokens);
 }
 
 function solve(
   input: string[],
-  lexer: (input: string) => TokenCollection,
-  solver: (tokens: TokenCollection) => number,
+  solver: (tokens: TokenCollection) => number
 ): number {
   return input
     .map((l) => solver(lexer(l)))
@@ -165,9 +171,9 @@ function solve(
 }
 
 export function one(input: string[]) {
-  return solve(input, basicLexer, basic);
+  return solve(input, basic);
 }
 
 export function two(input: string[]) {
-  return solve(input, advancedLexer, advanced);
+  return solve(input, advanced);
 }
