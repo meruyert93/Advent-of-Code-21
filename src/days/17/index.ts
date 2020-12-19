@@ -1,117 +1,108 @@
-import { toInt } from "../../lib/helpers";
+import { range, toInt } from "../../lib/helpers";
 
 type Plane = Map<string, boolean>;
-type Point = { x: number, y: number, z: number };
+type Point = number[];
 
-type Bounds = { from: number, to: number };
+type Bounds = { from: number; to: number };
+type PlaneBounds = Record<number, Bounds>;
 
-type PlaneBounds = {
-  x: Bounds,
-  y: Bounds,
-  z: Bounds,
+function pointToStr(point: Point) {
+  return point.join(".");
 }
 
-function toStr(point: Point) {
-  return `${point.z}.${point.y}.${point.x}`;
+function pointFromStr(str: string): Point {
+  return str.split(".").map(toInt);
 }
 
-function fromStr(str: string): Point {
-  const [z, y, x] = str.split('.');
-  return { x: toInt(x), y: toInt(y), z: toInt(z) };
-}
-
-function parseInput(input: string[]) {
+function parseInput(input: string[], dimensions: number) {
   const plane: Plane = new Map();
-  const z = 0;
+  const rest = range(dimensions - 2).map(() => 0);
 
   input.forEach((l, y) => {
-    l.split('').forEach((c, x) => {
-      if (c === '#') {
-        const point: Point = { x, y, z };
-        const key = toStr(point);
-        plane.set(key, true);
+    l.split("").forEach((c, x) => {
+      if (c === "#") {
+        const point: Point = [x, y, ...rest];
+        plane.set(pointToStr(point), true);
       }
     });
   });
-
 
   return plane;
 }
 
 function isPointActive(plane: Plane): (p: Point) => boolean {
-  return (p) => plane.has(toStr(p));
+  return (p) => {
+    return plane.has(pointToStr(p));
+  };
+}
+
+function expandRange(ranges: number[][]): Point[] {
+  const output: Point[] = [[]];
+  return ranges.reduce(
+    (a, b: number[]) => a.flatMap((x) => b.map((y) => [...x, y])),
+    output
+  );
+}
+
+function getPointsInPlane(bounds: PlaneBounds): Point[] {
+  const values = Object.values(bounds);
+  const ranges = values.map(({ from, to }) =>
+    range(to - from + 1).map((i) => i + from)
+  );
+  return expandRange(ranges);
 }
 
 function getSurroundingPoints(p: Point): Point[] {
-  const { x, y, z } = p;
-  return [
-    { z, x, y: y + 1 },
-    { z, x, y: y - 1 },
-    { z, x: x - 1, y },
-    { z, x: x - 1, y: y - 1 },
-    { z, x: x - 1, y: y + 1 },
-    { z, x: x + 1, y },
-    { z, x: x + 1, y: y - 1 },
-    { z, x: x + 1, y: y + 1 },
-  ]
+  const ranges = p.map((v) => [v - 1, v, v + 1]);
+  return expandRange(ranges).filter((x) => !x.every((v, i) => v === p[i]));
 }
 
 function getNextPointState(plane: Plane, p: Point): boolean {
   const isActive = isPointActive(plane);
-
-  const neighbours = [
-    { ...p, z: p.z - 1 },
-    { ...p, z: p.z + 1 },
-    ...getSurroundingPoints(p),
-    ...getSurroundingPoints({ ...p, z: p.z - 1 }),
-    ...getSurroundingPoints({ ...p, z: p.z + 1 }),
-  ];
-
-  const activeNeighbours = neighbours.filter(isActive);
-  return isActive(p) ? [2, 3].includes(activeNeighbours.length) : activeNeighbours.length === 3;
+  const activeNeighbours = getSurroundingPoints(p).filter(isActive);
+  return isActive(p)
+    ? [2, 3].includes(activeNeighbours.length)
+    : activeNeighbours.length === 3;
 }
 
 function getBounds(plane: Plane): PlaneBounds {
   const keys = Array.from(plane.keys());
+  const values = keys.map(pointFromStr);
 
-  const values = keys.map(fromStr);
+  const initialState: PlaneBounds = {};
 
-  const xs = [...values].sort((a, b) => a.x - b.x);
-  const ys = [...values].sort((a, b) => a.y - b.y);
-  const zs = [...values].sort((a, b) => a.z - b.z);
+  return values[0].reduce((acc, _, i) => {
+    const iVals = [...values].sort((a, b) => a[i] - b[i]);
 
-  return {
-    x: { from: xs[0].x - 1, to: xs[xs.length - 1].x + 1 },
-    y: { from: ys[0].y - 1, to: ys[ys.length - 1].y + 1 },
-    z: { from: zs[0].z - 1, to: zs[zs.length - 1].z + 1 },
-  };
+    return {
+      ...acc,
+      [i]: { from: iVals[0][i] - 1, to: iVals[iVals.length - 1][i] + 1 },
+    };
+  }, initialState);
 }
 
 function cycle(plane: Plane): Plane {
   const nextPlane = new Map(plane.entries());
   const bounds = getBounds(plane);
 
-  for (let z = bounds.z.from; z <= bounds.z.to; z += 1) {
-    for (let y = bounds.y.from; y <= bounds.y.to; y += 1) {
-      for (let x = bounds.x.from; x <= bounds.x.to; x += 1) {
-        const p = { x, y, z };
-        const currState = isPointActive(plane)(p);
-        const nextState = getNextPointState(plane, p);
+  const points = getPointsInPlane(bounds);
 
-        if (!currState && nextState) {
-          nextPlane.set(toStr(p), true);
-        } else if (currState && !nextState) {
-          nextPlane.delete(toStr(p));
-        }
-      }
+  points.forEach((p) => {
+    const currState = isPointActive(plane)(p);
+    const nextState = getNextPointState(plane, p);
+
+    if (!currState && nextState) {
+      nextPlane.set(pointToStr(p), true);
+    } else if (currState && !nextState) {
+      nextPlane.delete(pointToStr(p));
     }
-  }
+  });
+
   return nextPlane;
 }
 
-
-export function one(input: string[]): number {
-  let plane = parseInput(input);
+function solve(input: string[], dimensions: number): number {
+  let plane = parseInput(input, dimensions);
 
   for (let i = 0; i < 6; i += 1) {
     plane = cycle(plane);
@@ -120,6 +111,10 @@ export function one(input: string[]): number {
   return plane.size;
 }
 
-export function two(inputs: string[]) {
+export function one(input: string[]): number {
+  return solve(input, 3);
+}
 
+export function two(input: string[]) {
+  return solve(input, 4);
 }
