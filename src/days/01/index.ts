@@ -15,7 +15,6 @@ export function one(_input: string[]): number{
     }
 
   }
-
   return sum;
 }
 
@@ -26,14 +25,14 @@ export function two(_input: string[]): number{
 
   let sumArr: Array<number> = []
   
-    for (let i = 2; i < input.length; i++) {
-      sumArr.push(input[i-2]+input[i-1]+input[i])
-    }
+  for (let i = 2; i < input.length; i++) {
+    sumArr.push(input[i-2]+input[i-1]+input[i])
+  }
 
-    const newInput = sumArr.map(el => String(el));
-    
-    result = one(newInput);
-    return result;
+  const newInput = sumArr.map(el => String(el));
+  
+  result = one(newInput);
+  return result;
 }
 
   
