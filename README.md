@@ -1,6 +1,6 @@
-# aoc-2020
+# aoc-2021
 
-> Solutions for [Advent of Code 2020](https://adventofcode.com/2020), in TypeScript
+> Solutions for [Advent of Code 2021](https://adventofcode.com/2021), in TypeScript
 
 ## Usage
 
