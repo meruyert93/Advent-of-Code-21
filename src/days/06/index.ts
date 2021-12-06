@@ -43,8 +43,9 @@ function fishSimulator2(input: number[], days: number): number {
     for (let i = 0; i < fishCounter.length - 1; i++) {
       fishCounter[i] = fishCounter[i + 1];
     }
-
+    //new fish borns here
     fishCounter[8] = fishesAtZero;
+    //reset fish timer
     fishCounter[6] += fishesAtZero;
   }
 
