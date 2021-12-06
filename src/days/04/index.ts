@@ -1,125 +1,163 @@
 import { toInt } from "../../lib/helpers";
 
-type Passport = Record<string, string>;
-type Validator = (val: string) => boolean;
-
-// my little input framework currently does not support that.
-function readPassports(input: string[]): Passport[] {
-  type PassportAcc = {
-    passports: Passport[];
-    currentPassport: Passport;
-  };
-
-  const { passports } = input.reduce(
-    (acc: PassportAcc, line: string, idx: number): PassportAcc => {
-      if (line === "") {
-        return {
-          currentPassport: {},
-          passports: [...acc.passports, acc.currentPassport],
-        };
-      }
-
-      const entries = Object.fromEntries(
-        line.split(" ").map((s) => s.split(":"))
-      );
-      const currentPassport = { ...acc.currentPassport, ...entries };
-
-      if (idx === input.length - 1) {
-        return {
-          currentPassport: {},
-          passports: [...acc.passports, currentPassport],
-        };
-      }
-
-      return { ...acc, currentPassport };
-    },
-    { currentPassport: {}, passports: [] }
-  );
-
-  return passports;
+//transform input
+function transformInput(_input: string[]): [number[], number[][]] {
+  const drawnNumArr: number[] = _input[0].split(',').map(toInt);
+  _input.shift();
+  
+  const input: number[][] = _input.map(el => el
+                                            .split(',')
+                                            .map(el => el.replace(/\s+/g,' ').trim())
+                                            .map(el => el.split(' ').map(toInt))
+                                            .flat()
+                                            .filter(el => !Number.isNaN(el))
+                                            );
+  let bingoMatrix: number [][] = [];
+  for (let i = 0; i < input.length; i++) {
+    if(input[i].length === 0) {
+      //here, it is assumed that bingo has always 5 row and columns
+      bingoMatrix.push([...input[i+1], ...input[i+2], ...input[i+3], ...input[i+4], ...input[i+5],])
+    }
+  }
+  return [drawnNumArr, bingoMatrix];
 }
 
-const rules = {
-  requiredPresent(passport: Passport): boolean {
-    const requiredFields = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
-    return requiredFields.every((x) => Object.hasOwnProperty.call(passport, x));
-  },
-  between(min: number, max: number): Validator {
-    return (val) => {
-      const num = toInt(val);
-      return Number.isInteger(num) && num >= min && num <= max;
-    };
-  },
-  height(): Validator {
-    return (val) => {
-      const ending = val.substr(val.length - 2);
-      const rest = val.substr(0, val.length - 2);
+class Bingo {
+  numbers: number[];
+  position: any;
+  rows: number[];
+  columns: number[];
+  isReady: boolean;
+  existedNumbers: any;
 
-      if (ending === "cm") {
-        return rules.between(150, 193)(rest);
-      } else if (ending === "in") {
-        return rules.between(59, 76)(rest);
-      }
+  constructor(numbers: number[]) {
+    this.numbers = numbers;
+    this.position = new Map()
+    this.rows = Array(5).fill(0)
+    this.columns = Array(5).fill(0)
+    this.isReady = false;
+    this.existedNumbers = new Set();
 
-      return false;
-    };
-  },
-  hex(): Validator {
-    return (val) => {
-      const firstChar = val[0];
-      if (firstChar !== "#") return false;
-      const rest = val.substr(1);
-      return (
-        rest.length === 6 &&
-        rest.split("").every((char) => /\d|[a-f]/.test(char))
-      );
-    };
-  },
-  eyeColor(): Validator {
-    return (val) => {
-      return ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].includes(val);
-    };
-  },
-  digits(len: number): Validator {
-    return (val) => {
-      const letters = val.split("");
-      return (
-        letters.length === len &&
-        letters.every((x) => Number.isInteger(toInt(x)))
-      );
-    };
-  },
-  pass(): Validator {
-    return () => true;
-  },
-};
-
-export function one(input: string[]): number {
-  return readPassports(input).reduce((acc: number, curr: Passport) => {
-    return rules.requiredPresent(curr) ? acc + 1 : acc;
-  }, 0);
-}
-
-export function two(input: string[]): number {
-  const validators: Record<string, Validator> = {
-    byr: rules.between(1920, 2002),
-    iyr: rules.between(2010, 2020),
-    eyr: rules.between(2020, 2030),
-    hgt: rules.height(),
-    hcl: rules.hex(),
-    ecl: rules.eyeColor(),
-    pid: rules.digits(9),
-    cid: rules.pass(),
-  };
-
-  function validate(passport: Passport): boolean {
-    if (!rules.requiredPresent(passport)) return false;
-    return Object.entries(passport).every(([key, value]) =>
-      validators[key](value)
-    );
+    for(let i = 0; i <this.numbers.length; i++) {
+      const n = this.numbers[i]
+      this.position.set(n, {
+        row: Math.floor(i/5),
+        column: i%5
+      })
+    }
   }
 
-  return readPassports(input).reduce((acc: number, curr: Passport): number => {
-    return validate(curr) ? acc + 1 : acc;
-  }, 0);
+  showResult() {
+    const arr = [];
+    for(let i = 0; i < 5; i++) {
+      arr.push(this.numbers.slice(i*5, i*5+5))
+    }
+    console.log(arr.join("\n" + "\n"))
+  }
+
+  showMap() {
+    for (const i of this.position) {
+      console.log(i, this.position.get(i))
+    }
+  }
+
+  addExistedNumber(num: number) {
+    const position = this.position.get(num);
+    if (!position) return;
+    this.existedNumbers.add(num)
+    this.rows[position.row]++;
+    this.columns[position.column]++;
+
+    if(this.rows[position.row] === 5 
+        || this.columns[position.column] === 5 )  {
+          this.isReady = true;
+        }
+  }
+
+  nonExistedNumbers(): number[] {
+    return this.numbers.filter(n => !this.existedNumbers.has(n))
+  }
+}
+
+
+
+export function one(_input: string[]): number | undefined {
+
+  const transformedInput: [number[], number[][]] = transformInput(_input);
+
+  const [drawnNumArr, bingoMatrix] = transformedInput;
+
+  let bingo = bingoMatrix.map(el => new Bingo(el))
+
+  let winningMatrix;
+  const alreadyDrawnNumArr: number[] = [];
+
+  for (let i = 0; i < drawnNumArr.length; i++) {
+
+    let done: boolean = false;
+    alreadyDrawnNumArr.push(drawnNumArr[i]);
+
+    for(let j = 0; j < bingo.length; j++) {
+      bingo[j].addExistedNumber(drawnNumArr[i]);
+      if (bingo[j].isReady) {
+        done = true;
+        winningMatrix = bingo[j]
+        break;
+      }
+    }
+    if (done) break;
+  }
+
+  const undrawnNums: number[] | undefined = winningMatrix?.nonExistedNumbers();
+
+  const sum: number | undefined = undrawnNums?.reduce((a: number, b: number) => a + b, 0)
+
+  const lastNumber: number | undefined = alreadyDrawnNumArr?.pop()
+
+  let  result: number | undefined;
+
+  if (sum && lastNumber) result = sum * lastNumber
+  if (result) return result;
+}
+
+export function two(_input: string[]): number | undefined {
+  const transformedInput: [number[], number[][]] = transformInput(_input);
+
+  const [drawnNumArr, bingoMatrix] = transformedInput;
+
+  let bingo = bingoMatrix.map(el => new Bingo(el))
+
+  let lastWinningMartix;
+  let lastNumber: number | undefined;
+  const alreadyDrawnNumArr: number[] = [];
+
+  for (let i = 0; i < drawnNumArr.length; i++) {
+
+    let hasIncompletePart: boolean = false;
+
+    alreadyDrawnNumArr.push(drawnNumArr[i]);
+
+    for(let j = 0; j < bingo.length; j++) {
+
+      if(!bingo[j].isReady) {
+        hasIncompletePart = true;
+        bingo[j].addExistedNumber(drawnNumArr[i]);
+        if (bingo[j].isReady) {
+          lastWinningMartix = bingo[j]
+          lastNumber = drawnNumArr[i];
+        }
+      }
+    }
+
+    if (!hasIncompletePart) break;
+  }
+
+  const undrawnNums: number[] | undefined = lastWinningMartix?.nonExistedNumbers();
+
+  const sum: number | undefined = undrawnNums?.reduce((a: number, b: number) => a + b, 0)
+
+  let  result: number | undefined;
+
+  if (sum && lastNumber) result = sum * lastNumber
+  if (result) return result;
 }
