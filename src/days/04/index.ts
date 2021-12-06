@@ -47,20 +47,6 @@ class Bingo {
     }
   }
 
-  showResult() {
-    const arr = [];
-    for(let i = 0; i < 5; i++) {
-      arr.push(this.numbers.slice(i*5, i*5+5))
-    }
-    console.log(arr.join("\n" + "\n"))
-  }
-
-  showMap() {
-    for (const i of this.position) {
-      console.log(i, this.position.get(i))
-    }
-  }
-
   addExistedNumber(num: number) {
     const position = this.position.get(num);
     if (!position) return;
@@ -80,7 +66,7 @@ class Bingo {
 }
 
 
-
+//part 1
 export function one(_input: string[]): number | undefined {
 
   const transformedInput: [number[], number[][]] = transformInput(_input);
@@ -120,6 +106,7 @@ export function one(_input: string[]): number | undefined {
   if (result) return result;
 }
 
+//part 2
 export function two(_input: string[]): number | undefined {
   const transformedInput: [number[], number[][]] = transformInput(_input);
 
