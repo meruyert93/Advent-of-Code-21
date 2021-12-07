@@ -11,9 +11,7 @@ function transformInput(_input: string[]): number[] {
   return input;
 }
 
-
 // The "median" is the "middle" value in the list of numbers.
-
 function median(numbers: number[]){
   if(numbers.length ===0) throw new Error("No inputs");
   numbers.sort((a,b) => a - b);
@@ -25,18 +23,34 @@ function median(numbers: number[]){
   return (numbers[half - 1] + numbers[half]) / 2.0;
 }
 
+// The "mean" is the average value in the list of numbers
+function mean(numbers: number[]) {
+  const sum = numbers.reduce((a,b) => a+b);
+  const average = sum/numbers.length
+  return Math.min(Math.floor(average), Math.ceil(average));
+}
+
 export function one(_input: string[]): number {
-  const input = transformInput(_input)
+  const input: number[] = transformInput(_input)
 
-  const medianNum = median(input);
+  const medianNum: number = median(input);
 
-  const fuelConsumption = input.map(n => Math.abs(n - medianNum))
+  const fuelConsumption: number[] = input.map(n => Math.abs(n - medianNum))
 
-  const totalFuel = fuelConsumption.reduce((a,b) => a + b)
+  const totalFuel: number = fuelConsumption.reduce((a,b) => a + b)
 
   return totalFuel;
 }
 
 export function two(_input: string[]): number {
-  return 0;
+  const input: number[] = transformInput(_input);
+
+  const meanNum: number = mean(input);
+
+  const differenceArr: number[] = input.map(n => Math.abs(n - meanNum))
+
+  const triangleNumArr: number[] = differenceArr.map(n => Math.ceil((n*n + n)/2))
+  
+  const sum = triangleNumArr.reduce((a,b) => a + b)
+  return sum;
 }
