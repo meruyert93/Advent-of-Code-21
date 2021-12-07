@@ -27,7 +27,7 @@ function median(numbers: number[]){
 function mean(numbers: number[]) {
   const sum = numbers.reduce((a,b) => a+b);
   const average = sum/numbers.length
-  return Math.min(Math.floor(average), Math.ceil(average));
+  return Math.floor(average);
 }
 
 export function one(_input: string[]): number {
