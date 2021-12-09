@@ -39,3 +39,47 @@ export function one(_input: string[]): number {
 
   return occurenceCounter;
 }
+
+// export function two(_input: string[]): number {
+//   const display = transformInput(_input)
+
+//   let signalPattern = {
+//     acedgfb: 8,
+//     cdfbe: 5,
+//     gcdfa: 2,
+//     fbcad: 3,
+//     dab: 7,
+//     cefabd: 9,
+//     cdfgeb: 6,
+//     eafb: 4,
+//     cagedb: 0,
+//     ab: 1,
+//   }
+
+//   const sortedSignalPattern: any = {}
+
+//   for (const [key, value] of Object.entries(signalPattern)) {
+//     const newKey = key.split('').sort((a,b) => a.localeCompare(b)).join('')
+//     sortedSignalPattern[newKey] = value
+//   }
+
+//   const numbers = display.map(
+//     obj => obj.digitalOutputs.map(
+//       string => {
+//         for (const [key, value] of Object.entries(sortedSignalPattern)) {
+//           if(string === key) {
+//             return value
+//           }
+//         }
+//       }
+//     )
+//   )
+  
+
+//   console.log(sortedSignalPattern)
+
+//   console.log(display)
+
+//   console.log(numbers)
+//   return 0;
+// }
