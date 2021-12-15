@@ -38,7 +38,7 @@ function transformInput(_input: string[]): string[][] {
 
 
 //function to find lines with corruptedbrackets: 
-function findLinesWithCorruptedbrackets(input: string[][]):[string[], bracketsByLine] {
+function findLinesWithCorruptedBrackets(input: string[][]):[string[], bracketsByLine] {
   const neededClosedBrackets: string[] = [];
 
   const pairBrackets: pairBrackets = {
@@ -98,7 +98,7 @@ export function one(_input: string[]): number {
     '>': 25137,
   }
 
-  const [corruptedBrackets] = findLinesWithCorruptedbrackets(input)
+  const [corruptedBrackets] = findLinesWithCorruptedBrackets(input)
 
   let counter: number = 0;
 
@@ -132,7 +132,7 @@ export function two(_input: string[]): number {
 
   const incompleteBracketsByLine: bracketsByLine = {}
 
-  const corruptedBracketsByLine = findLinesWithCorruptedbrackets(input)[1]
+  const corruptedBracketsByLine = findLinesWithCorruptedBrackets(input)[1]
 
   const linesWithCorruptedBrackets = Object.keys(corruptedBracketsByLine).map(toInt)
 
